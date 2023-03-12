@@ -33,32 +33,13 @@ all_fouls <- all_free_events %>%
 
 
 ## plot of red cards ----
-all_fouls %>%
-  filter( foul_committed.card.name=="Red Card") %>%
-  ggplot ( aes( x=location_1, y=location_2, 
-                color=foul_committed.type.name,
-                shape=foul_committed.type.name)
-           ) +
-  theme_void( ) +
-  annotate_pitchSB() +
-  geom_point(size=3) +
-  coord_flip(xlim = c(-1,120)) +
-  labs(
-    color= "Red Card Type",
-    shape= "Red Card Type"
-  ) +
-  theme(
-    legend.text.align = 0
-  ) +
-  scale_color_manual(
-    values = c("red","green","gray")
-  )
 
 view(
   all_free_events %>%
     filter(!is.na(bad_behaviour.card.name) ) %>%
     group_by(bad_behaviour.card.name) %>%
-    summarise(n = n())
+    summarise(n = n()),
+  title = "cards for bad behavior"
 ) # how many cards for bad behavior
 
 
@@ -141,7 +122,17 @@ view(red_card_fouls %>%
               team.name, position.name, match_id, season_id ), title = "other red cards" )
 
 
-red_card_fouls %>%
-  left_join(all_matches, by=match_id)
+matches_redcards <- red_card_fouls %>%
+  filter(foul_committed.type.name=="other") %>%
+  select(period, minute, location_1,location_2, possession_team.name,
+         team.name, position.name, match_id, season_id,
+         foul_committed.type.name
+         ) %>%
+  inner_join(all_matches %>%
+              select(match_date, match_id, competition.country_name, 
+                     home_team.home_team_name, away_team.away_team_name
+              ),
+             by = join_by(match_id)
+            )
 
 
